@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "name": "lumen-station-alan-vo",
+  "owner": "ALANDVO",
+  "email": "alanvo@gmail.com",
+  "domain": "AI/ML developer tools",
+  "workflows": [
+    "Sandbox tool execution and compact verbose stdout/stderr with token savings analytics",
+    "Index tool output artifacts into SQLite FTS5 for precision on-demand retrieval",
+    "Safely frame session guidance and prevent orphan processes across agent platforms"
+  ],
+  "auth": "oidc-keycloak-saml-broker",
+  "llm_providers": [
+    "openai-compatible",
+    "anthropic",
+    "gemini",
+    "ollama"
+  ],
+  "summary": "Work in progress: lumen-station-alan-vo",
+  "status": "work-in-progress"
+}
