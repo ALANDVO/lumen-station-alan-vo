@@ -1,0 +1,33 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.pytest_cache/
+*.egg-info/
+.mypy_cache/
+.ruff_cache/
+coverage/
+
+# Node / Frontend
+node_modules/
+dist/
+build/
+.vite/
+npm-debug.log*
+
+# Databases and Runtime Data
+*.db
+*.sqlite
+*.sqlite3
+*.db-wal
+*.db-shm
+
+# Environment & Secrets
+.env
+*.pem
+*.key
+
+# Agent Metadata
+.antigravitycli/
+.omp/
