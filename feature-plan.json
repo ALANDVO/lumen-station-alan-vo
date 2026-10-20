@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "current_feature": "context-sandboxing-engine",
+  "current_feature": "multi-platform-agent-adapters",
   "features": [
     {
       "id": "context-sandboxing-engine",
@@ -31,29 +31,52 @@
     {
       "id": "safe-session-guidance",
       "title": "Classifier-Safe Advisory Session Guidance and Multi-Platform Registry",
-      "status": "planned",
+      "status": "done",
       "acceptance": [
         "Formats non-imperative advisory tool guidance blocks to avoid auto-mode bypass security denials.",
         "Provides quiet-mode toggle to eliminate injected transcript blocks for security-conscious users."
+      ],
+      "implementation": [
+        "backend/app/services/session_guard.py",
+        "backend/app/api/routes_sessions.py",
+        "frontend/src/components/SessionGuidance.tsx"
+      ],
+      "tests": [
+        "backend/tests/test_session_guard.py"
       ]
     },
     {
       "id": "invariant-token-analytics",
       "title": "Invariant-Preserving Token Economics and Model Pricing Comparison",
-      "status": "planned",
+      "status": "done",
       "acceptance": [
         "Strictly verifies that per-session kept out tokens never exceed global totals.",
         "Reports zero savings for sessions with zero tool executions.",
         "Calculates counterfactual cost comparisons across Claude, GPT, and Gemini model tiers."
+      ],
+      "implementation": [
+        "backend/app/services/analytics_service.py",
+        "backend/app/api/routes_analytics.py",
+        "frontend/src/components/AnalyticsDashboard.tsx"
+      ],
+      "tests": [
+        "backend/tests/test_analytics.py",
+        "backend/tests/test_api_workflows.py"
       ]
     },
     {
       "id": "multi-platform-agent-adapters",
       "title": "Multi-Platform Agent Hooks and Process Watchdog Adapters",
-      "status": "planned",
+      "status": "in_progress",
       "acceptance": [
         "Provides platform-specific hook definitions for OpenCode V2, Pi, Claude Code, and Antigravity.",
         "Enforces parent-death polling guards to prevent orphaned background processes on Windows and Linux."
+      ],
+      "implementation": [
+        "backend/app/services/platform_adapters.py"
+      ],
+      "tests": [
+        "backend/tests/test_platform_adapters.py"
       ]
     }
   ]
