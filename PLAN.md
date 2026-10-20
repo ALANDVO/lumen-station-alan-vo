@@ -4,7 +4,7 @@ Each round completes one feature or repair. Future items are planned, not implem
 
 ## Current round
 
-context-sandboxing-engine
+multi-platform-agent-adapters
 
 ## Roadmap
 
@@ -24,26 +24,38 @@ Tests: `backend/tests/test_sandbox.py`, `backend/tests/test_search_fts.py`, `bac
 
 ### safe-session-guidance — Classifier-Safe Advisory Session Guidance and Multi-Platform Registry
 
-Status: planned
+Status: done
 
 Acceptance:
 - Formats non-imperative advisory tool guidance blocks to avoid auto-mode bypass security denials.
 - Provides quiet-mode toggle to eliminate injected transcript blocks for security-conscious users.
 
+Implementation: `backend/app/services/session_guard.py`, `backend/app/api/routes_sessions.py`, `frontend/src/components/SessionGuidance.tsx`
+
+Tests: `backend/tests/test_session_guard.py`
+
 ### invariant-token-analytics — Invariant-Preserving Token Economics and Model Pricing Comparison
 
-Status: planned
+Status: done
 
 Acceptance:
 - Strictly verifies that per-session kept out tokens never exceed global totals.
 - Reports zero savings for sessions with zero tool executions.
 - Calculates counterfactual cost comparisons across Claude, GPT, and Gemini model tiers.
 
+Implementation: `backend/app/services/analytics_service.py`, `backend/app/api/routes_analytics.py`, `frontend/src/components/AnalyticsDashboard.tsx`
+
+Tests: `backend/tests/test_analytics.py`, `backend/tests/test_api_workflows.py`
+
 ### multi-platform-agent-adapters — Multi-Platform Agent Hooks and Process Watchdog Adapters
 
-Status: planned
+Status: in_progress
 
 Acceptance:
 - Provides platform-specific hook definitions for OpenCode V2, Pi, Claude Code, and Antigravity.
 - Enforces parent-death polling guards to prevent orphaned background processes on Windows and Linux.
+
+Implementation: `backend/app/services/platform_adapters.py`
+
+Tests: `backend/tests/test_platform_adapters.py`
 
