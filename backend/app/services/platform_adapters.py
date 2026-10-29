@@ -108,22 +108,37 @@ def get_platform_spec(platform: str) -> Dict[str, Any]:
     })
 
 
-def generate_parent_death_guard_script(platform: str, server_url: str = "http://127.0.0.1:8000") -> str:
+def generate_parent_death_guard_script(platform: str, server_url: str = "http://127.0.0.1:8000", target_os: str = "linux") -> str:
     """
-    Generate a parent-death guard script for the target platform.
-    On Windows: uses ppid polling since no SIGCHLD.
-    On Linux/macOS: uses stdin EOF + ppid polling belt-and-suspenders.
+    Generate a parent-death guard script for the target platform and OS.
+    On Windows: uses PowerShell with Get-Process parent polling.
+    On Linux/macOS: uses bash with stdin EOF + ppid polling belt-and-suspenders.
     """
     spec = get_platform_spec(platform)
     timeout = spec["default_timeout_seconds"]
     now_iso = datetime.now(timezone.utc).isoformat()
     issues = ", ".join(spec["issues_addressed"]) or "general orphan prevention"
 
-    # Use string template to avoid f-string conflicts with bash $ variables
+    if target_os.lower() == "windows":
+        return _generate_windows_parent_death_guard(platform, spec, server_url, timeout, now_iso, issues)
+    else:
+        return _generate_unix_parent_death_guard(platform, spec, server_url, timeout, now_iso, issues)
+
+
+def _generate_unix_parent_death_guard(
+    platform: str,
+    spec: Dict[str, Any],
+    server_url: str,
+    timeout: int,
+    now_iso: str,
+    issues: str,
+) -> str:
+    """Generate Unix/Linux/macOS bash parent-death guard script."""
     template = '''#!/usr/bin/env bash
 # Lumen Station Parent-Death Guard for {display_name}
 # Auto-generated: {now_iso}
 # Issues addressed: {issues}
+# Target OS: Linux/macOS
 
 set -euo pipefail
 
@@ -145,7 +160,7 @@ is_parent_alive() {{
 
 # Function to register session with Lumen Station
 register_session() {{
-    local session_id=$(uuidgen)
+    local session_id=$(uuidgen 2>/dev/null || cat /proc/sys/kernel/random/uuid 2>/dev/null || python3 -c "import uuid; print(uuid.uuid4())")
     local working_dir=$(pwd)
     local os_name=$(uname -s | tr '[:upper:]' '[:lower:]')
 
@@ -220,6 +235,119 @@ fi
         timeout=timeout,
         platform=platform,
     )
+
+
+def _generate_windows_parent_death_guard(
+    platform: str,
+    spec: Dict[str, Any],
+    server_url: str,
+    timeout: int,
+    now_iso: str,
+    issues: str,
+) -> str:
+    """Generate Windows PowerShell parent-death guard script."""
+    return f'''# Lumen Station Parent-Death Guard for {spec["display_name"]}
+# Auto-generated: {now_iso}
+# Issues addressed: {issues}
+# Target OS: Windows (PowerShell)
+
+$ErrorActionPreference = "Stop"
+
+$LumenServer = "{server_url}"
+$LumenTimeout = {timeout}
+$LumenPlatform = "{platform}"
+
+# Parent PID to monitor
+$parentPid = $PID
+try {{
+    $parentProcess = Get-WmiObject Win32_Process -Filter "ProcessId = $pid"
+    if ($parentProcess) {{ $parentPid = $parentProcess.ParentProcessId }}
+}} catch {{}}
+
+function Test-ParentAlive {{
+    param([int]$ppid)
+    if ($ppid -le 1) {{ return $false }}
+    try {{
+        Get-Process -Id $ppid -ErrorAction Stop
+        return $true
+    }} catch {{
+        return $false
+    }}
+}}
+
+function Register-Session {{
+    $sessionId = [guid]::NewGuid().ToString()
+    $workingDir = Get-Location
+    $osName = "windows"
+
+    $body = @{{
+        id = $sessionId
+        platform = $LumenPlatform
+        working_dir = $workingDir
+        os_name = $osName
+        quiet_mode = $false
+    }} | ConvertTo-Json -Compress
+
+    try {{
+        Invoke-RestMethod -Method Post -Uri "$LumenServer/api/sessions" -ContentType "application/json" -Body $body | Out-Null
+    }} catch {{
+        # Ignore registration errors
+    }}
+
+    return $sessionId
+}}
+
+function Invoke-Sandboxed {{
+    param([string]$sessionId, [string]$command, [int]$timeoutSec = $LumenTimeout)
+
+    $body = @{{
+        session_id = $sessionId
+        command = $command
+        timeout_seconds = $timeoutSec
+    }} | ConvertTo-Json -Compress
+
+    try {{
+        return Invoke-RestMethod -Method Post -Uri "$LumenServer/api/sandbox/execute" -ContentType "application/json" -Body $body
+    }} catch {{
+        return @{{ error = "sandbox request failed" }} | ConvertTo-Json -Compress
+    }}
+}}
+
+# Main guard loop - runs as background job
+$sessionId = Register-Session
+Write-Host "[Lumen Station] Session registered: $sessionId" -ForegroundColor Cyan
+
+$watchdog = Start-Job -ScriptBlock {{
+    param($sessionId, $parentPid, $server, $timeout)
+    $checkInterval = 15
+    while (Test-ParentAlive -ppid $parentPid) {{
+        Start-Sleep -Seconds $checkInterval
+    }}
+    Write-Host "[Lumen Station] Parent process $parentPid terminated. Cleaning up session $sessionId..." -ForegroundColor Yellow
+}} -ArgumentList $sessionId, $parentPid, $LumenServer, $LumenTimeout
+
+# Wait for stdin close or parent death
+try {{
+    # In PowerShell, we can detect parent death via the job or stdin
+    $stdin = [System.Console]::OpenStandardInput()
+    $buffer = New-Object byte[] 1
+    while ($true) {{
+        if (-not (Test-ParentAlive -ppid $parentPid)) {{
+            break
+        }}
+        if ($stdin.DataAvailable) {{
+            $read = $stdin.Read($buffer, 0, 1)
+            if ($read -eq 0) {{ break }}  # EOF
+        }}
+        Start-Sleep -Milliseconds 500
+    }}
+}} finally {{
+    Stop-Job $watchdog -ErrorAction SilentlyContinue
+    Remove-Job $watchdog -ErrorAction SilentlyContinue
+}}
+
+Write-Host "[Lumen Station] Guard exiting." -ForegroundColor Green
+'''
 
 
 def generate_claude_code_hooks(server_url: str = "http://127.0.0.1:8000", quiet_mode: bool = False) -> Dict[str, Any]:
@@ -407,10 +535,15 @@ def generate_zed_mcp(server_url: str = "http://127.0.0.1:8000") -> Dict[str, Any
     }
 
 
-def generate_platform_adapter(platform: str, server_url: str = "http://127.0.0.1:8000", quiet_mode: bool = False) -> Dict[str, Any]:
+def generate_platform_adapter(
+    platform: str,
+    server_url: str = "http://127.0.0.1:8000",
+    quiet_mode: bool = False,
+    target_os: str = "linux",
+) -> Dict[str, Any]:
     """
     Generate complete platform adapter configuration including hooks, MCP config,
-    and parent-death guard script.
+    and parent-death guard script for the target OS.
     """
     spec = get_platform_spec(platform)
 
@@ -424,7 +557,8 @@ def generate_platform_adapter(platform: str, server_url: str = "http://127.0.0.1
         "parent_death_guard_included": spec["parent_death_guard"],
         "issues_addressed": spec["issues_addressed"],
         "configuration": None,
-        "parent_death_guard_script": None,
+        "parent_death_guard_script_unix": None,
+        "parent_death_guard_script_windows": None,
     }
 
     # Generate platform-specific configuration
@@ -447,9 +581,10 @@ def generate_platform_adapter(platform: str, server_url: str = "http://127.0.0.1
     else:
         result["configuration"] = {"error": f"Unknown platform: {platform}"}
 
-    # Generate parent-death guard script if supported
+    # Generate parent-death guard scripts if supported
     if spec["parent_death_guard"]:
-        result["parent_death_guard_script"] = generate_parent_death_guard_script(platform, server_url)
+        result["parent_death_guard_script_unix"] = generate_parent_death_guard_script(platform, server_url, "linux")
+        result["parent_death_guard_script_windows"] = generate_parent_death_guard_script(platform, server_url, "windows")
 
     return result
 
@@ -473,12 +608,18 @@ def write_adapter_to_filesystem(adapter: Dict[str, Any], output_dir: str = ".") 
         config_path.write_text(json.dumps(config_content, indent=2))
     written.append(str(config_path))
 
-    # Write parent-death guard script if available
-    if adapter.get("parent_death_guard_script"):
+    # Write parent-death guard scripts if available
+    if adapter.get("parent_death_guard_script_unix"):
         script_path = base_path / f".lumen-station/{adapter['platform']}-parent-guard.sh"
         script_path.parent.mkdir(parents=True, exist_ok=True)
-        script_path.write_text(adapter["parent_death_guard_script"])
+        script_path.write_text(adapter["parent_death_guard_script_unix"])
         script_path.chmod(0o755)
+        written.append(str(script_path))
+
+    if adapter.get("parent_death_guard_script_windows"):
+        script_path = base_path / f".lumen-station/{adapter['platform']}-parent-guard.ps1"
+        script_path.parent.mkdir(parents=True, exist_ok=True)
+        script_path.write_text(adapter["parent_death_guard_script_windows"])
         written.append(str(script_path))
 
     return written
@@ -502,7 +643,7 @@ def register_platform_session(
             VALUES (?, ?, ?, ?, ?, ?, ?);
         """, (session_id, platform, working_dir, os_name, 1 if quiet_mode else 0, now_iso, now_iso))
 
-    adapter = generate_platform_adapter(platform, quiet_mode=quiet_mode)
+    adapter = generate_platform_adapter(platform, quiet_mode=quiet_mode, target_os=os_name)
 
     return {
         "session_id": session_id,

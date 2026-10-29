@@ -13,6 +13,7 @@ from app.api.routes_sandbox import router as sandbox_router
 from app.api.routes_search import router as search_router
 from app.api.routes_sessions import router as sessions_router
 from app.api.routes_analytics import router as analytics_router
+from app.api.routes_platform_adapters import router as platform_adapters_router
 
 
 def get_version_metadata() -> str:
@@ -78,6 +79,7 @@ def create_app() -> FastAPI:
     application.include_router(search_router)
     application.include_router(sessions_router)
     application.include_router(analytics_router)
+    application.include_router(platform_adapters_router)
 
     return application
 
