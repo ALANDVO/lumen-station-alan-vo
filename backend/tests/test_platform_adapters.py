@@ -233,3 +233,42 @@ def test_platform_spec_issues_addressed():
     assert "#947" in claude_issues
     assert "#982" in claude_issues
     assert "#950" in claude_issues
+def test_generate_parent_death_guard_unix_script():
+    """Verify Unix/Linux bash parent-death guard script generation."""
+    script = generate_parent_death_guard_script("claude-code", target_os="linux")
+    assert "#!/usr/bin/env bash" in script
+    assert "is_parent_alive" in script
+    assert "parent_death_watchdog" in script
+    assert "LUMEN_SERVER" in script
+    assert "Claude Code" in script
+    assert "kill -0" in script
+    assert "PPID" in script
+
+
+def test_generate_parent_death_guard_windows_script():
+    """Verify Windows PowerShell parent-death guard script generation."""
+    script = generate_parent_death_guard_script("antigravity", target_os="windows")
+    assert "Get-Process" in script  # Windows process query
+    assert "ParentProcessId" in script
+    assert "[guid]::NewGuid()" in script  # Windows UUID generation
+    assert "Start-Job" in script  # Background job
+    assert "Test-ParentAlive" in script
+    assert "Invoke-RestMethod" in script
+
+
+def test_generate_parent_death_guard_defaults_to_unix():
+    """Verify default target_os is linux."""
+    script = generate_parent_death_guard_script("claude-code")
+    assert "#!/usr/bin/env bash" in script
+    assert "kill -0" in script
+
+
+def test_generate_platform_adapter_includes_both_scripts():
+    """Verify platform adapter includes both Unix and Windows guard scripts."""
+    adapter = generate_platform_adapter("claude-code")
+    assert "parent_death_guard_script_unix" in adapter
+    assert "parent_death_guard_script_windows" in adapter
+    assert adapter["parent_death_guard_script_unix"] is not None
+    assert adapter["parent_death_guard_script_windows"] is not None
+    assert "#!/usr/bin/env bash" in adapter["parent_death_guard_script_unix"]
+    assert "Get-Process" in adapter["parent_death_guard_script_windows"]

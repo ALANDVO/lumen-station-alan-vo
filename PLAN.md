@@ -49,13 +49,13 @@ Tests: `backend/tests/test_analytics.py`, `backend/tests/test_api_workflows.py`
 
 ### multi-platform-agent-adapters — Multi-Platform Agent Hooks and Process Watchdog Adapters
 
-Status: in_progress
+Status: done
 
 Acceptance:
 - Provides platform-specific hook definitions for OpenCode V2, Pi, Claude Code, and Antigravity.
 - Enforces parent-death polling guards to prevent orphaned background processes on Windows and Linux.
 
-Implementation: `backend/app/services/platform_adapters.py`
+Implementation: `backend/app/services/platform_adapters.py`, `backend/app/api/routes_platform_adapters.py`, `backend/app/main.py`
 
 Tests: `backend/tests/test_platform_adapters.py`
 

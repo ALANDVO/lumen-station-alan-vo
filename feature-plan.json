@@ -67,13 +67,15 @@
     {
       "id": "multi-platform-agent-adapters",
       "title": "Multi-Platform Agent Hooks and Process Watchdog Adapters",
-      "status": "in_progress",
+      "status": "done",
       "acceptance": [
         "Provides platform-specific hook definitions for OpenCode V2, Pi, Claude Code, and Antigravity.",
         "Enforces parent-death polling guards to prevent orphaned background processes on Windows and Linux."
       ],
       "implementation": [
-        "backend/app/services/platform_adapters.py"
+        "backend/app/services/platform_adapters.py",
+        "backend/app/api/routes_platform_adapters.py",
+        "backend/app/main.py"
       ],
       "tests": [
         "backend/tests/test_platform_adapters.py"
