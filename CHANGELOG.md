@@ -1,9 +1,15 @@
 # Changelog
 
+## 1.3.0 — work-in-progress checkpoint
+
+Partial code published for continued development. Known issues: STATUS.md.
+
 ## 1.2.0 — work-in-progress checkpoint
 
 Partial code published for continued development. Known issues: STATUS.md.
 
+### Fixed
+- `generate_platform_adapter` now includes `parent_death_guard_script` key (for target OS) in addition to `parent_death_guard_script_unix` and `parent_death_guard_script_windows`, fixing test `test_generate_platform_adapter_complete`.
 ## 1.1.1 — work-in-progress checkpoint
 
 ### Added

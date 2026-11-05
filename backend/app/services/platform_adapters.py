@@ -585,7 +585,8 @@ def generate_platform_adapter(
     if spec["parent_death_guard"]:
         result["parent_death_guard_script_unix"] = generate_parent_death_guard_script(platform, server_url, "linux")
         result["parent_death_guard_script_windows"] = generate_parent_death_guard_script(platform, server_url, "windows")
-
+        # Provide default script for target_os
+        result["parent_death_guard_script"] = generate_parent_death_guard_script(platform, server_url, target_os)
     return result
 
 
