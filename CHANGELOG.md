@@ -55,3 +55,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Keycloak OIDC authentication flow with PKCE, state/nonce validation, upstream SAML identity brokering support, and localhost-only demo mode.
 - React + TypeScript dashboard with tool execution sandboxing, live folding preview, FTS5 chunk query, guidance generator, and analytics views.
 - Offline reproducible evaluation benchmark suite (`backend.app.evaluation.evaluate_context_savings`).
+
+---
+
+Alan Vo · [alanvo.net](https://alanvo.net)

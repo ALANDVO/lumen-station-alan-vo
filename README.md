@@ -190,3 +190,7 @@ Lumen Station supports enterprise Single Sign-On via Keycloak OIDC with upstream
 **Author**: Alan Vo  
 **Contact**: alanvo@gmail.com  
 **License**: MIT
+
+---
+
+Alan Vo · [alanvo.net](https://alanvo.net)
