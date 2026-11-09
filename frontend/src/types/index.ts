@@ -97,3 +97,22 @@ export interface AdvisoryExplanationResponse {
   raw_prompt_tokens: number;
   raw_completion_tokens: number;
 }
+export interface PlatformSpec {
+  platform: string;
+  display_name: string;
+  config_path: string;
+  hook_type: string;
+  supports_pkce: boolean;
+  supports_quiet_mode: boolean;
+  parent_death_guard: boolean;
+  default_timeout_seconds: number;
+  issues_addressed: string[];
+}
+
+export interface PlatformAdapterConfig {
+  platform: string;
+  configuration: Record<string, unknown> | null;
+  parent_death_guard_script_unix: string | null;
+  parent_death_guard_script_windows: string | null;
+  issues_addressed: string[];
+}
