@@ -7,13 +7,13 @@ import { SearchPanel } from "./components/SearchPanel";
 import { SessionGuidance } from "./components/SessionGuidance";
 import { AnalyticsDashboard } from "./components/AnalyticsDashboard";
 import { AuditLogView } from "./components/AuditLogView";
-
+import { PlatformAdapters } from "./components/PlatformAdapters";
 export const App: React.FC = () => {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [sessions, setSessions] = useState<SessionItem[]>([]);
   const [selectedSessionId, setSelectedSessionId] = useState<string>("");
   const [analytics, setAnalytics] = useState<GlobalAnalytics | null>(null);
-  const [activeTab, setActiveTab] = useState<"sandbox" | "search" | "sessions" | "analytics" | "audit">("sandbox");
+  const [activeTab, setActiveTab] = useState<"sandbox" | "search" | "sessions" | "analytics" | "audit" | "platform-adapters">("sandbox");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -117,6 +117,12 @@ export const App: React.FC = () => {
           >
             Audit Log
           </button>
+          <button
+            className={`tab-btn ${activeTab === "platform-adapters" ? "active" : ""}`}
+            onClick={() => setActiveTab("platform-adapters")}
+          >
+            Platform Adapters
+          </button>
         </nav>
 
         {activeTab === "sandbox" && (
@@ -150,6 +156,9 @@ export const App: React.FC = () => {
 
         {activeTab === "audit" && (
           <AuditLogView />
+        )}
+        {activeTab === "platform-adapters" && (
+          <PlatformAdapters />
         )}
       </main>
 

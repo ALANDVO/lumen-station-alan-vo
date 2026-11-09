@@ -7,6 +7,8 @@ import {
   GlobalAnalytics,
   AuditLogItem,
   AdvisoryExplanationResponse,
+  PlatformSpec,
+  PlatformAdapterConfig,
 } from "../types";
 
 let currentCsrfToken = "";
@@ -154,5 +156,19 @@ export const api = {
 
   async exportSnapshot(): Promise<Record<string, unknown>> {
     return request<Record<string, unknown>>("/api/analytics/export");
+  },
+  // Platform Adapters
+  async getPlatforms(): Promise<PlatformSpec[]> {
+    return request<PlatformSpec[]>("/api/platform-adapters");
+  },
+
+  async getPlatformAdapter(
+    platform: string,
+    quietMode = false,
+    targetOs = "linux"
+  ): Promise<PlatformAdapterConfig> {
+    return request<PlatformAdapterConfig>(
+      `/api/platform-adapters/${platform}?quiet_mode=${quietMode}&target_os=${targetOs}`
+    );
   },
 };
