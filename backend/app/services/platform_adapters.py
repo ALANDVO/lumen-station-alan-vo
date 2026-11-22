@@ -260,7 +260,7 @@ $LumenPlatform = "{platform}"
 # Parent PID to monitor
 $parentPid = $PID
 try {{
-    $parentProcess = Get-WmiObject Win32_Process -Filter "ProcessId = $pid"
+    $parentProcess = Get-WmiObject Win32_Process -Filter "ProcessId = \$PID"
     if ($parentProcess) {{ $parentPid = $parentProcess.ParentProcessId }}
 }} catch {{}}
 

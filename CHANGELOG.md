@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.6.0 — work-in-progress checkpoint
+
+Partial code published for continued development. Known issues: STATUS.md.
+
+## 1.5.1 — bugfix
+
+### Fixed
+- `generate_parent_death_guard_script` Windows PowerShell generation now uses `$PID` consistently instead of undefined `$pid` variable, fixing potential PowerShell runtime errors in parent-process monitoring scripts.
+
 ## 1.5.0 — work-in-progress checkpoint
 
 Partial code published for continued development. Known issues: STATUS.md.
