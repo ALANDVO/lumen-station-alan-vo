@@ -246,7 +246,7 @@ def _generate_windows_parent_death_guard(
     issues: str,
 ) -> str:
     """Generate Windows PowerShell parent-death guard script."""
-    return f'''# Lumen Station Parent-Death Guard for {spec["display_name"]}
+    return fr'''# Lumen Station Parent-Death Guard for {spec["display_name"]}
 # Auto-generated: {now_iso}
 # Issues addressed: {issues}
 # Target OS: Windows (PowerShell)
